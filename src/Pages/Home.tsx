@@ -1,14 +1,6 @@
 import { ArrowLeft, Server } from 'lucide-react';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
+import { Command, CommandInput } from '@/components/ui/command';
 import { useEffect, useState } from 'react';
-import { Card } from '@/components/ui/card';
 import { AdAccountKPIs } from '@/components/campaing';
 
 export const Home = () => {
