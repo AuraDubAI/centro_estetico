@@ -13,7 +13,7 @@ export const Home = () => {
   }, []);
 
   const getAccounts = async (name?: string) => {
-    let url = 'http://localhost:3000/api/ad-accounts';
+    let url = 'https://fb-kpi-worker.vercel.app/api/ad-accounts';
     if (name) url += `?name=${encodeURIComponent(name)}`;
     const response = await fetch(url);
     const json = await response.json();
@@ -21,7 +21,9 @@ export const Home = () => {
   };
 
   const findSelectAccount = async (id: string) => {
-    const response = await fetch(`http://localhost:3000/api/ad-accounts/${id}`);
+    const response = await fetch(
+      `https://fb-kpi-worker.vercel.app/api/ad-accounts/${id}`,
+    );
     const json = await response.json();
     setSelectAccount(json.data || []);
     console.log(json.data);
