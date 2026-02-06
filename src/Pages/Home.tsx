@@ -1,8 +1,7 @@
-import { ArrowLeft, Server } from 'lucide-react';
-import { Command, CommandInput } from '@/components/ui/command';
+'use client';
+
 import { useEffect, useState } from 'react';
-import { AdAccountKPIs } from '@/components/campaing';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import imgLogo from '../assets/logo.jpeg';
 import {
   ColumnDef,
   flexRender,
@@ -11,7 +10,6 @@ import {
   getSortedRowModel,
   SortingState,
 } from '@tanstack/react-table';
-
 import {
   Table,
   TableBody,
@@ -21,180 +19,129 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-('use client');
+// ===== Interface de Campaign =====
+interface Campaign {
+  campaign_id: string;
+  ad_account_id: string;
+  Nome: string;
+  ad_account_name: string;
+  spend: number | string;
+  leads_generated: number;
+  cpl: number | string;
+  ctr: number | string;
+  cpm: number | string;
+  conversion_rate: number | string;
+  frequency: number | string;
+  date_start: string;
+}
 
 export const Home = () => {
-  const [data, setData] = useState<any[]>([]);
-  const [allCampaigns, setAllCampaigns] = useState<any[]>([]);
-  const [selectAccount, setSelectAccount] = useState(null);
-  const [search, setSearch] = useState('');
+  const [allCampaigns, setAllCampaigns] = useState<Campaign[]>([]);
+  const [filteredCampaigns, setFilteredCampaigns] = useState<Campaign[]>([]);
+  const [search, setSearch] = useState<string>('');
+
+  const getAllCampaigns = async () => {
+    try {
+      const url =
+        'https://alfredodegrandis.app.n8n.cloud/webhook/563e4ce7-1d91-4f7a-8485-eee0b0553e94';
+      const response = await fetch(url);
+      const json = await response.json();
+      setAllCampaigns(json.data || []);
+    } catch (err) {
+      console.error('Erro ao buscar campanhas:', err);
+    }
+  };
 
   useEffect(() => {
-    getAccounts();
     getAllCampaigns();
   }, []);
 
-  const getAccounts = async (name?: string) => {
-    let url = 'https://fb-kpi-worker.vercel.app/api/ad-accounts';
-    if (name) url += `?name=${encodeURIComponent(name)}`;
-    const response = await fetch(url);
-    const json = await response.json();
-    setData(json.data || []);
-  };
+  useEffect(() => {
+    if (search) {
+      setFilteredCampaigns(
+        allCampaigns.filter(
+          (campaign) =>
+            campaign.Nome.toLowerCase().includes(search.toLowerCase()) ||
+            campaign.ad_account_name
+              .toLowerCase()
+              .includes(search.toLowerCase()),
+        ),
+      );
+    } else {
+      setFilteredCampaigns(allCampaigns);
+    }
+  }, [search, allCampaigns]);
 
-  const getAllCampaigns = async () => {
-    let url = 'https://fb-kpi-worker.vercel.app/api/all-campaigns';
-    const response = await fetch(url);
-    const json = await response.json();
-    setAllCampaigns(json.data || []);
-  };
-
-  const findSelectAccount = async (id: string) => {
-    const response = await fetch(
-      `https://fb-kpi-worker.vercel.app/api/ad-accounts/${id}`,
-    );
-    const json = await response.json();
-    setSelectAccount(json.data || []);
-    console.log(json.data);
-  };
-
-  // Definição das colunas para a DataTable
-
-  interface Campaign {
-    campaign_id: string;
-    ad_account_id: string;
-    campaign_name: string;
-    ad_account_name: string;
-    spend: string;
-    leads_generated: number;
-    cpl: string;
-    ctr: string;
-    cpm: string;
-    conversion_rate: string;
-    frequency: string;
-    recorded_at: string;
-  }
+  const formatNumber = (v: any) =>
+    v !== null && v !== undefined ? Number(v).toFixed(2) : '0.00';
 
   const columns: ColumnDef<Campaign>[] = [
-    {
-      accessorKey: 'campaign_name',
-      header: 'Campanha',
-    },
-    {
-      accessorKey: 'ad_account_name',
-      header: 'Conta',
-    },
+    { accessorKey: 'Nome', header: 'Campanha' },
+    { accessorKey: 'ad_account_name', header: 'Conta' },
     {
       accessorKey: 'spend',
       header: 'Gasto (€)',
+      cell: ({ getValue }) => formatNumber(getValue()),
     },
-    {
-      accessorKey: 'leads_generated',
-      header: 'Leads',
-    },
+    { accessorKey: 'leads_generated', header: 'Leads' },
     {
       accessorKey: 'cpl',
       header: 'CPL (€)',
+      cell: ({ getValue }) => formatNumber(getValue()),
     },
     {
       accessorKey: 'ctr',
       header: 'CTR (%)',
+      cell: ({ getValue }) => formatNumber(getValue()),
     },
     {
       accessorKey: 'cpm',
       header: 'CPM (€)',
+      cell: ({ getValue }) => formatNumber(getValue()),
     },
     {
       accessorKey: 'conversion_rate',
       header: 'Taxa de Conversão (%)',
+      cell: ({ getValue }) => formatNumber(getValue()),
     },
     {
       accessorKey: 'frequency',
       header: 'Frequência',
+      cell: ({ getValue }) => formatNumber(getValue()),
     },
     {
-      accessorKey: 'recorded_at',
+      accessorKey: 'date_start',
       header: 'Data',
-      cell: ({ getValue }) => new Date(getValue<string>()).toLocaleString(),
+      cell: ({ getValue }) => {
+        const date = new Date(getValue<string>());
+        return date.toLocaleDateString('pt-BR'); // dd/mm/yyyy
+      },
     },
   ];
 
   return (
-    <Tabs defaultValue="search" className="w-full p-10">
-      <TabsList>
-        <TabsTrigger value="search">Search</TabsTrigger>
-        <TabsTrigger value="all_campaigns">All Campaigns</TabsTrigger>
-      </TabsList>
-      <TabsContent value="search">
-        {selectAccount ? (
-          <>
-            <div
-              className="flex row items-center pt-2 cursor-pointer"
-              onClick={() => setSelectAccount(null)}
-            >
-              <ArrowLeft className="mr-2 w-4 h-4 text-blue-600" />
-              <span>Voltar</span>
-            </div>
-            <AdAccountKPIs data={selectAccount} />
-          </>
-        ) : (
-          <CommandDemo
-            data={data}
-            search={search}
-            setSearch={setSearch}
-            getAccounts={getAccounts}
-            findSelectAccount={findSelectAccount}
-          />
-        )}
-      </TabsContent>
-      <TabsContent value="all_campaigns">
-        <DataTable data={allCampaigns} columns={columns} />
-      </TabsContent>
-    </Tabs>
+    <div className="p-5">
+      <img
+        src={imgLogo}
+        alt="Logo"
+        width={150}
+        height={150}
+        className="rounded m-auto mb-4"
+      />
+      <input
+        type="text"
+        placeholder="Digite uma conta..."
+        className="border rounded p-2 w-full mb-4"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
+      <DataTable data={filteredCampaigns} columns={columns} />
+    </div>
   );
 };
 
-interface CommandDemoProps {
-  data: any[];
-  search: string;
-  setSearch: (v: string) => void;
-  getAccounts: (name?: string) => void;
-  findSelectAccount: (id: string) => void;
-}
-
-export function CommandDemo({
-  data,
-  search,
-  setSearch,
-  getAccounts,
-  findSelectAccount,
-}: CommandDemoProps) {
-  return (
-    <Command className="rounded-[20px] border shadow-md md:max-w-[500px] p-5 m-auto mt-5">
-      <CommandInput
-        placeholder="Type an account..."
-        value={search}
-        onValueChange={(v) => {
-          setSearch(v);
-          getAccounts(v);
-        }}
-      />
-      <div>
-        {data.map((a) => (
-          <div
-            className="flex row items-center pt-2 cursor-pointer"
-            key={a.ad_account_id}
-            onClick={() => findSelectAccount(a.ad_account_id)}
-          >
-            <Server className="mr-2 w-4 h-4 text-blue-600" />
-            <span>{a.name}</span>
-          </div>
-        ))}
-      </div>
-    </Command>
-  );
-}
-
+// ===== DataTable genérico =====
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -211,11 +158,11 @@ export function DataTable<TData, TValue>({
     state: { sorting },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(), // <-- habilita a ordenação
+    getSortedRowModel: getSortedRowModel(),
   });
 
   return (
-    <div className="overflow-hidden rounded-md border">
+    <div className="overflow-hidden rounded-md border mt-5">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -224,7 +171,7 @@ export function DataTable<TData, TValue>({
                 <TableHead
                   key={header.id}
                   className="cursor-pointer select-none"
-                  onClick={header.column.getToggleSortingHandler()} // <-- toggle sorting
+                  onClick={header.column.getToggleSortingHandler()}
                 >
                   {flexRender(
                     header.column.columnDef.header,
@@ -239,6 +186,7 @@ export function DataTable<TData, TValue>({
             </TableRow>
           ))}
         </TableHeader>
+
         <TableBody>
           {table.getRowModel().rows.length > 0 ? (
             table.getRowModel().rows.map((row) => (
@@ -253,7 +201,7 @@ export function DataTable<TData, TValue>({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+                Nenhum resultado.
               </TableCell>
             </TableRow>
           )}
