@@ -1,0 +1,55 @@
+.
+├── backup_stuff.sh
+├── components.json
+├── eslint.config.js
+├── .gitignore
+├── index.html
+├── package.json
+├── package-lock.json
+├── pnpm-lock.yaml
+├── postcss.config.js
+├── project_codebase.txt
+├── project_tree.txt
+├── public
+│   ├── settings.svg
+│   └── vite.svg
+├── README.md
+├── src
+│   ├── App.tsx
+│   ├── assets
+│   │   ├── logo.jpeg
+│   │   └── react.svg
+│   ├── components
+│   │   ├── campaing.tsx
+│   │   └── ui
+│   │       ├── button.tsx
+│   │       ├── calendar.tsx
+│   │       ├── card.tsx
+│   │       ├── checkbox.tsx
+│   │       ├── command.tsx
+│   │       ├── dialog.tsx
+│   │       ├── form.tsx
+│   │       ├── input.tsx
+│   │       ├── label.tsx
+│   │       ├── multi-select-filter.tsx
+│   │       ├── popover.tsx
+│   │       ├── select.tsx
+│   │       ├── skeleton.tsx
+│   │       ├── table.tsx
+│   │       └── tabs.tsx
+│   ├── index.css
+│   ├── lib
+│   │   └── utils.ts
+│   ├── main.tsx
+│   ├── Pages
+│   │   ├── Home.tsx
+│   │   └── NotFound.tsx
+│   └── vite-env.d.ts
+├── tailwind.config.js
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.node.json
+├── vercel.json
+└── vite.config.ts
+
+8 directories, 45 files
