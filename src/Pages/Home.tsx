@@ -130,36 +130,46 @@ export const Home = () => {
     endDate: string,
     searchName: string,
   ) => {
-    return data.map((campaign) => {
-      const filteredAdsets = (campaign.adsets || [])
-        .map((adset) => {
-          const filteredInsights = (adset.insights || [])
-            .filter((insight) => {
-              const date = new Date(insight.date_start)
-                .toISOString()
-                .split('T')[0];
+    const search = searchName.toLowerCase();
 
-              const afterStart = startDate ? date >= startDate : true;
-              const beforeEnd = endDate ? date <= endDate : true;
+    return data
+      .map((campaign) => {
+        // 🔥 filtro SOMENTE no nível campaign
+        const campaignMatch =
+          !search ||
+          campaign.name?.toLowerCase().includes(search) ||
+          campaign.account_name?.toLowerCase().includes(search);
 
-              const matchName = adset.name
-                .toLowerCase()
-                .includes(searchName.toLowerCase());
+        if (!campaignMatch) {
+          return { ...campaign, adsets: [] };
+        }
 
-              return afterStart && beforeEnd && matchName;
-            })
-            .sort(
-              (a, b) =>
-                new Date(a.date_start).getTime() -
-                new Date(b.date_start).getTime(),
-            );
+        const filteredAdsets = (campaign.adsets || [])
+          .map((adset) => {
+            const filteredInsights = (adset.insights || [])
+              .filter((insight) => {
+                const date = new Date(insight.date_start)
+                  .toISOString()
+                  .split('T')[0];
 
-          return { ...adset, insights: filteredInsights };
-        })
-        .filter((a) => a.insights.length > 0);
+                const afterStart = startDate ? date >= startDate : true;
+                const beforeEnd = endDate ? date <= endDate : true;
 
-      return { ...campaign, adsets: filteredAdsets };
-    });
+                return afterStart && beforeEnd;
+              })
+              .sort(
+                (a, b) =>
+                  new Date(a.date_start).getTime() -
+                  new Date(b.date_start).getTime(),
+              );
+
+            return { ...adset, insights: filteredInsights };
+          })
+          .filter((a) => a.insights.length > 0);
+
+        return { ...campaign, adsets: filteredAdsets };
+      })
+      .filter((c) => c.adsets.length > 0); // remove campaigns vazias
   };
 
   const currentFiltered = useMemo(() => {
