@@ -240,6 +240,7 @@ export function TableHome({ data, sorting, setSorting }: TableHomeProps) {
             <TableCell>TOTALE</TableCell>
             <TableCell>-</TableCell>
             <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
             <TableCell>{formatInt(totals.totalLeads)}</TableCell>
             <TableCell>-</TableCell>
             <TableCell>-</TableCell>
