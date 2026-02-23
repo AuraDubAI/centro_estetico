@@ -284,7 +284,7 @@ export const Home = () => {
 
           <div className="relative">
             <Input
-              placeholder="Buscar campanha, adset..."
+              placeholder="Cerca campagna, cliente..."
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
               className="pr-8"
