@@ -26,12 +26,6 @@ import {
   calculateMetrics,
 } from '@/utils/formats';
 import { CampaignRow } from '@/types/api';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from '@/components/ui/tooltip';
 
 function getDateRangeFormatted(insights: any[]) {
   if (!insights || insights.length === 0)
@@ -111,31 +105,12 @@ function mapCampaignsToAdsetRows(campaigns: any[]) {
 
 const columns: ColumnDef<CampaignRow>[] = [
   {
-    accessorKey: 'adset_name',
-    header: 'Adset',
-    cell: ({ row, getValue }) => {
-      const adsetName = getValue() as string;
-      const campaignName = row.original.campaign_name;
-      const accountName = row.original.ad_account_name;
-
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              className="cursor-pointer truncate max-w-[350px] text-ellipsis"
-              style={{ display: 'inline-block' }}
-            >
-              {adsetName}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent className="whitespace-pre-line bg-white text-slate-900 rounded-md shadow-md p-2 border border-gray-200 text-sm max-w-xs">
-            <div className="font-semibold">Ad Set:</div> {adsetName}
-            <div className="font-semibold mt-1">Campaign:</div> {campaignName}
-            <div className="font-semibold mt-1">Account:</div> {accountName}
-          </TooltipContent>
-        </Tooltip>
-      );
-    },
+    accessorKey: 'campaign_name',
+    header: 'Frontend',
+  },
+  {
+    accessorKey: 'ad_account_name',
+    header: 'Cliente',
   },
   { accessorKey: 'start_date', header: 'Start Date' },
   { accessorKey: 'end_date', header: 'End Date' },
@@ -186,7 +161,7 @@ export function TableHome({ data, sorting, setSorting }: TableHomeProps) {
   // Memoiza linhas e totais
   const adsetRows = useMemo(() => mapCampaignsToAdsetRows(data), [data]);
   const totals = useMemo(() => getTotals(adsetRows), [adsetRows]);
-
+  console.log(data);
   // Memoiza colunas
   const memoColumns = useMemo(() => columns, []);
 
@@ -201,85 +176,80 @@ export function TableHome({ data, sorting, setSorting }: TableHomeProps) {
 
   return (
     <div className="w-full overflow-x-auto">
-      <TooltipProvider>
-        <Table className="table-auto">
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow
-                key={headerGroup.id}
-                className="hover:bg-transparent w-full"
-              >
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="bg-slate-50/80 border-b h-12"
-                  >
-                    {header.isPlaceholder ? null : (
-                      <div
-                        onClick={header.column.getToggleSortingHandler()}
-                        className="flex items-center cursor-pointer"
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                        <SortIcon column={header.column} />
-                      </div>
-                    )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-
-          <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="hover:bg-blue-50/50 transition-colors border-b border-slate-100 w-full"
+      <Table className="table-auto">
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow
+              key={headerGroup.id}
+              className="hover:bg-transparent w-full"
+            >
+              {headerGroup.headers.map((header) => (
+                <TableHead
+                  key={header.id}
+                  className="bg-slate-50/80 border-b h-12"
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className="py-3 text-xs text-slate-700 truncate max-w-[350px]"
+                  {header.isPlaceholder ? null : (
+                    <div
+                      onClick={header.column.getToggleSortingHandler()}
+                      className="flex items-center cursor-pointer"
                     >
                       {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
+                        header.column.columnDef.header,
+                        header.getContext(),
                       )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-32 text-center text-slate-400"
-                >
-                  Nessun dato trovato per i filtri selezionati.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-
-          <TableFooter>
-            <TableRow className="bg-slate-100 font-bold hover:bg-slate-100 border-t-2 border-slate-200">
-              <TableCell>TOTALE</TableCell>
-              <TableCell>-</TableCell>
-              <TableCell>-</TableCell>
-              <TableCell>{formatInt(totals.totalLeads)}</TableCell>
-              <TableCell>-</TableCell>
-              <TableCell>-</TableCell>
-              <TableCell>-</TableCell>
-              <TableCell>-</TableCell>
-              <TableCell>€ {formatInt(totals.totalSpend)}</TableCell>
-              <TableCell>-</TableCell>
+                      <SortIcon column={header.column} />
+                    </div>
+                  )}
+                </TableHead>
+              ))}
             </TableRow>
-          </TableFooter>
-        </Table>
-      </TooltipProvider>
+          ))}
+        </TableHeader>
+
+        <TableBody>
+          {table.getRowModel().rows.length > 0 ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                className="hover:bg-blue-50/50 transition-colors border-b border-slate-100 w-full"
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell
+                    key={cell.id}
+                    className="py-3 text-xs text-slate-700 truncate max-w-[350px]"
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                className="h-32 text-center text-slate-400"
+              >
+                Nessun dato trovato per i filtri selezionati.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+
+        <TableFooter>
+          <TableRow className="bg-slate-100 font-bold hover:bg-slate-100 border-t-2 border-slate-200">
+            <TableCell>TOTALE</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>{formatInt(totals.totalLeads)}</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>€ {formatInt(totals.totalSpend)}</TableCell>
+            <TableCell>-</TableCell>
+          </TableRow>
+        </TableFooter>
+      </Table>
     </div>
   );
 }
