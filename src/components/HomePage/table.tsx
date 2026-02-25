@@ -26,21 +26,41 @@ import {
   calculateMetrics,
 } from '@/utils/formats';
 import { CampaignRow } from '@/types/api';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+dayjs.extend(customParseFormat);
+
+function parseDateToTimestamp(dateStr: string | null) {
+  if (!dateStr) return null;
+
+  const d = dayjs(dateStr, ['YYYY-MM-DD', 'DD/MM/YYYY'], true);
+
+  if (!d.isValid()) return null;
+
+  return d.valueOf(); // 🔥 número (ideal pra sort)
+}
 
 function getDateRangeFormatted(insights: any[]) {
   if (!insights || insights.length === 0)
     return { start_date: null, end_date: null };
 
-  const dates = insights
+  const timestamps = insights
     .filter((i) => i.date_start && i.date_end)
-    .map((i) => ({ start: new Date(i.date_start), end: new Date(i.date_end) }));
+    .map((i) => ({
+      start: dayjs(i.date_start).valueOf(),
+      end: dayjs(i.date_end).valueOf(),
+    }));
 
-  if (dates.length === 0) return { start_date: null, end_date: null };
+  if (timestamps.length === 0) return { start_date: null, end_date: null };
 
-  const minDate = new Date(Math.min(...dates.map((d) => d.start.getTime())));
-  const maxDate = new Date(Math.max(...dates.map((d) => d.end.getTime())));
+  const minDate = Math.min(...timestamps.map((d) => d.start));
+  const maxDate = Math.max(...timestamps.map((d) => d.end));
 
-  return { start_date: formatDate(minDate), end_date: formatDate(maxDate) };
+  return {
+    start_date: minDate,
+    end_date: maxDate,
+  };
 }
 
 interface AdsetRow {
@@ -73,14 +93,16 @@ const SortIcon = ({ column }: { column: any }) => {
 function mapCampaignsToAdsetRows(campaigns: any[]) {
   const rows: any[] = [];
 
-  for (const campaign of campaigns) {
-    for (const adset of campaign.adsets || []) {
-      const insights = adset.insights || [];
+  for (const campaign of campaigns ?? []) {
+    const adsets = Array.isArray(campaign.adsets) ? campaign.adsets : [];
+
+    for (const adset of adsets) {
+      const insights = Array.isArray(adset.insights) ? adset.insights : [];
+
       const { start_date, end_date } = getDateRangeFormatted(insights);
 
       const totals = sumInsights(insights);
       const { ctr, cpc, cpm, conversion_rate } = calculateMetrics(totals);
-
       rows.push({
         campaign_name: campaign.name,
         ad_account_name: campaign.account_name,
@@ -112,8 +134,24 @@ const columns: ColumnDef<CampaignRow>[] = [
     accessorKey: 'ad_account_name',
     header: 'Cliente',
   },
-  { accessorKey: 'start_date', header: 'Start Date' },
-  { accessorKey: 'end_date', header: 'End Date' },
+  {
+    accessorKey: 'start_date',
+    header: 'Start Date',
+    cell: ({ getValue }) => {
+      const value = getValue<number | null>();
+
+      return value ? dayjs(value).format('DD/MM/YYYY') : '-';
+    },
+  },
+  {
+    accessorKey: 'end_date',
+    header: 'End Date',
+    cell: ({ getValue }) => {
+      const value = getValue<number | null>();
+
+      return value ? dayjs(value).format('DD/MM/YYYY') : '-';
+    },
+  },
   {
     accessorKey: 'leads_generated',
     header: 'Leads',
@@ -158,11 +196,8 @@ interface TableHomeProps {
 }
 
 export function TableHome({ data, sorting, setSorting }: TableHomeProps) {
-  // Memoiza linhas e totais
   const adsetRows = useMemo(() => mapCampaignsToAdsetRows(data), [data]);
   const totals = useMemo(() => getTotals(adsetRows), [adsetRows]);
-  console.log(data);
-  // Memoiza colunas
   const memoColumns = useMemo(() => columns, []);
 
   const table = useReactTable({
