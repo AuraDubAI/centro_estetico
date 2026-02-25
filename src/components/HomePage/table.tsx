@@ -19,7 +19,6 @@ import {
 } from '@/components/ui/table';
 import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import {
-  formatDate,
   formatCur,
   formatInt,
   sumInsights,
@@ -30,16 +29,6 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 dayjs.extend(customParseFormat);
-
-function parseDateToTimestamp(dateStr: string | null) {
-  if (!dateStr) return null;
-
-  const d = dayjs(dateStr, ['YYYY-MM-DD', 'DD/MM/YYYY'], true);
-
-  if (!d.isValid()) return null;
-
-  return d.valueOf(); // 🔥 número (ideal pra sort)
-}
 
 function getDateRangeFormatted(insights: any[]) {
   if (!insights || insights.length === 0)
