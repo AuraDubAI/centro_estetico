@@ -13,15 +13,23 @@ export const formatPct = (v: number) => formatNum2(v) + '%';
 export const formatInt = (v: number) =>
   v.toLocaleString('it-IT', { maximumFractionDigits: 0 });
 
-export const formatDate = (date: string | Date | null) =>
-  date
-    ? new Date(date).toLocaleDateString('it-IT', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        timeZone: 'UTC',
-      })
-    : '--';
+export const formatDate = (date: any) => {
+  try {
+    if (!date) return '--';
+
+    const parsed = new Date(date);
+
+    if (isNaN(parsed.getTime())) return '--';
+
+    return parsed.toLocaleDateString('it-IT', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  } catch {
+    return '--';
+  }
+};
 
 export function sumInsights(insights: Insight[]) {
   return insights.reduce(

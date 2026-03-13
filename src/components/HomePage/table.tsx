@@ -96,7 +96,7 @@ function mapCampaignsToAdsetRows(campaigns: any[]) {
         adset_name: adset.name,
         status: adset.effective_status,
         start_date,
-        end_date: formatDate(adset.end_time),
+        end_date: adset.end_time,
         leads_generated: totals.leads,
         clicks: totals.clicks,
         impressions: totals.impressions,
@@ -136,7 +136,7 @@ const columns: ColumnDef<CampaignRow>[] = [
     cell: ({ getValue }) => {
       const value = getValue<number | null>();
 
-      return value ? dayjs(value).format('DD/MM/YYYY') : '-';
+      return value ? formatDate(value) : '--';
     },
   },
   {
