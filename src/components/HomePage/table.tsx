@@ -23,6 +23,7 @@ import {
   formatInt,
   sumInsights,
   calculateMetrics,
+  formatDate,
 } from '@/utils/formats';
 import { CampaignRow } from '@/types/api';
 import dayjs from 'dayjs';
@@ -82,13 +83,10 @@ const SortIcon = ({ column }: { column: any }) => {
 function mapCampaignsToAdsetRows(campaigns: any[]) {
   const rows: any[] = [];
 
-  for (const campaign of campaigns ?? []) {
-    const adsets = Array.isArray(campaign.adsets) ? campaign.adsets : [];
-
-    for (const adset of adsets) {
-      const insights = Array.isArray(adset.insights) ? adset.insights : [];
-
-      const { start_date, end_date } = getDateRangeFormatted(insights);
+  for (const campaign of campaigns) {
+    for (const adset of campaign.adsets || []) {
+      const insights = adset.insights || [];
+      const { start_date } = getDateRangeFormatted(insights);
 
       const totals = sumInsights(insights);
       const { ctr, cpc, cpm, conversion_rate } = calculateMetrics(totals);
@@ -98,7 +96,7 @@ function mapCampaignsToAdsetRows(campaigns: any[]) {
         adset_name: adset.name,
         status: adset.effective_status,
         start_date,
-        end_date,
+        end_date: formatDate(adset.end_time),
         leads_generated: totals.leads,
         clicks: totals.clicks,
         impressions: totals.impressions,

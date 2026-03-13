@@ -13,15 +13,15 @@ export const formatPct = (v: number) => formatNum2(v) + '%';
 export const formatInt = (v: number) =>
   v.toLocaleString('it-IT', { maximumFractionDigits: 0 });
 
-export const formatDate = (date: Date | null) =>
+export const formatDate = (date: string | Date | null) =>
   date
-    ? date.toLocaleDateString('it-IT', {
+    ? new Date(date).toLocaleDateString('it-IT', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
         timeZone: 'UTC',
       })
-    : null;
+    : '--';
 
 export function sumInsights(insights: Insight[]) {
   return insights.reduce(
