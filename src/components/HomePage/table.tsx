@@ -93,6 +93,9 @@ function mapCampaignsToAdsetRows(campaigns: any[]) {
       rows.push({
         campaign_name: campaign.name,
         ad_account_name: campaign.account_name,
+        user_id: campaign.account_id || null,
+        tipologia: campaign.tipologia || null,
+        manager: campaign.manager || null,
         adset_name: adset.name,
         status: adset.effective_status,
         start_date,
@@ -120,6 +123,21 @@ const columns: ColumnDef<CampaignRow>[] = [
   {
     accessorKey: 'ad_account_name',
     header: 'Cliente',
+  },
+  {
+    accessorKey: 'user_id',
+    header: 'User ID',
+    cell: ({ getValue }) => getValue<string | null>() || '-',
+  },
+  {
+    accessorKey: 'tipologia',
+    header: 'Tipologia',
+    cell: ({ getValue }) => getValue<string | null>() || '-',
+  },
+  {
+    accessorKey: 'manager',
+    header: 'Manager',
+    cell: ({ getValue }) => getValue<string | null>() || '-',
   },
   {
     accessorKey: 'start_date',
@@ -260,6 +278,9 @@ export function TableHome({ data, sorting, setSorting }: TableHomeProps) {
         <TableFooter>
           <TableRow className="bg-slate-100 font-bold hover:bg-slate-100 border-t-2 border-slate-200">
             <TableCell>TOTALE</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
             <TableCell>-</TableCell>
             <TableCell>-</TableCell>
             <TableCell>-</TableCell>

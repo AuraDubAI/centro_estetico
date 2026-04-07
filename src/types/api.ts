@@ -6,6 +6,8 @@ export interface Campaign {
   start_time: string;
   account_id: string;
   account_name: string;
+  tipologia: string | null;
+  manager: string | null;
   updated_time_campaign: string;
 
   id: number;
@@ -60,6 +62,10 @@ export interface Insight {
 export interface CampaignRow {
   campaign_name: string;
   ad_account_name: string;
+
+  user_id: string | null;
+  tipologia: string | null;
+  manager: string | null;
 
   adset_name: string;
   status: string;
