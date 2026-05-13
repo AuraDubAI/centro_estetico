@@ -118,12 +118,37 @@ export function mapCampaignsToAdsetRows(campaigns: any[]) {
 
 const columns: ColumnDef<CampaignRow>[] = [
   {
-    accessorKey: 'campaign_name',
-    header: 'Frontend',
-  },
-  {
     accessorKey: 'ad_account_name',
     header: 'Cliente',
+  },
+  {
+    accessorKey: 'spend',
+    header: 'Spend (€)',
+    cell: ({ getValue }) => formatCur(Number(getValue() || 0)),
+  },
+  {
+    accessorKey: 'leads_generated',
+    header: 'Leads',
+    cell: ({ getValue }) => formatInt(Number(getValue() || 0)),
+  },
+  {
+    accessorKey: 'cpl',
+    header: 'CPL (€)',
+    cell: ({ getValue }) => formatCur(Number(getValue() || 0)),
+  },
+  {
+    accessorKey: 'cpm',
+    header: 'CPM (€)',
+    cell: ({ getValue }) => formatCur(Number(getValue() || 0)),
+  },
+  {
+    accessorKey: 'ctr',
+    header: 'CTR (%)',
+    cell: ({ getValue }) => formatCur(Number(getValue() || 0)),
+  },
+  {
+    accessorKey: 'campaign_name',
+    header: 'Frontend',
   },
   {
     accessorKey: 'user_id',
@@ -157,31 +182,6 @@ const columns: ColumnDef<CampaignRow>[] = [
 
       return value ? formatDate(value) : '--';
     },
-  },
-  {
-    accessorKey: 'leads_generated',
-    header: 'Leads',
-    cell: ({ getValue }) => formatInt(Number(getValue() || 0)),
-  },
-  {
-    accessorKey: 'spend',
-    header: 'Spend (€)',
-    cell: ({ getValue }) => formatCur(Number(getValue() || 0)),
-  },
-  {
-    accessorKey: 'cpl',
-    header: 'CPL (€)',
-    cell: ({ getValue }) => formatCur(Number(getValue() || 0)),
-  },
-  {
-    accessorKey: 'cpm',
-    header: 'CPM (€)',
-    cell: ({ getValue }) => formatCur(Number(getValue() || 0)),
-  },
-  {
-    accessorKey: 'ctr',
-    header: 'CTR (%)',
-    cell: ({ getValue }) => formatCur(Number(getValue() || 0)),
   },
   {
     accessorKey: 'cpc',
@@ -284,14 +284,14 @@ export function TableHome({ data, sorting, setSorting }: TableHomeProps) {
         <TableFooter>
           <TableRow className="bg-slate-100 font-bold hover:bg-slate-100 border-t-2 border-slate-200">
             <TableCell>TOTALE</TableCell>
-            <TableCell>-</TableCell>
-            <TableCell>-</TableCell>
-            <TableCell>-</TableCell>
-            <TableCell>-</TableCell>
-            <TableCell>-</TableCell>
-            <TableCell>-</TableCell>
-            <TableCell>{formatInt(totals.totalLeads)}</TableCell>
             <TableCell>€ {formatInt(totals.totalSpend)}</TableCell>
+            <TableCell>{formatInt(totals.totalLeads)}</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
             <TableCell>-</TableCell>
             <TableCell>-</TableCell>
             <TableCell>-</TableCell>
