@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { SortingState } from '@tanstack/react-table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TableHome } from '@/components/HomePage/table';
+import { TableHome, exportTableToCSV, mapCampaignsToAdsetRows } from '@/components/HomePage/table';
 import { Layout } from '@/components/Layout';
 import { formatCur, formatPct, formatInt, formatNum2 } from '@/utils/formats';
 import { Campaign } from '@/types/api';
@@ -16,6 +16,8 @@ export const Home = () => {
   const [loading, setLoading] = useState(false);
   const [selectedStartDate, setSelectedStartDate] = useState('');
   const [selectedEndDate, setSelectedEndDate] = useState('');
+  const [selectedVertical, setSelectedVertical] = useState<'ALL' | 'CEA' | 'MEDTECH'>('ALL');
+  const [spendingToday, setSpendingToday] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -121,6 +123,42 @@ export const Home = () => {
           </button>
         )}
       </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1">Verticale</label>
+        <div className="flex rounded-lg border border-slate-200 overflow-hidden">
+          {(['ALL', 'CEA', 'MEDTECH'] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setSelectedVertical(v)}
+              className={`px-3 py-2 text-xs font-semibold transition-colors ${
+                selectedVertical === v
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-500 hover:bg-slate-50'
+              }`}
+            >
+              {v === 'ALL' ? 'Tutti' : v === 'CEA' ? 'CEA' : 'Med & Tech'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1">Spending</label>
+        <button
+          onClick={() => setSpendingToday(!spendingToday)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-xs font-semibold transition-all duration-200 ${
+            spendingToday
+              ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-100'
+              : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
+          }`}
+        >
+          <span className={`w-2 h-2 rounded-full transition-all ${
+            spendingToday ? 'bg-white animate-pulse' : 'bg-slate-300'
+          }`} />
+          Spending Today
+        </button>
+      </div>
     </div>
   );
 
@@ -129,11 +167,20 @@ export const Home = () => {
     startDate: string,
     endDate: string,
     searchName: string,
+    selectedVertical: 'ALL' | 'CEA' | 'MEDTECH',
+    spendingToday: boolean
   ) => {
     const search = searchName.toLowerCase();
 
     return data
       .map((campaign) => {
+        const verticalMatch =
+          selectedVertical === 'ALL' ||
+          (selectedVertical === 'MEDTECH' && campaign.account_name === 'Med & Tech') ||
+          (selectedVertical === 'CEA' && campaign.account_name !== 'Med & Tech');
+
+        if (!verticalMatch) return { ...campaign, adsets: [] };
+
         // 🔥 filtro SOMENTE no nível campaign
         const campaignMatch =
           !search ||
@@ -155,7 +202,13 @@ export const Home = () => {
                 const afterStart = startDate ? date >= startDate : true;
                 const beforeEnd = endDate ? date <= endDate : true;
 
-                return afterStart && beforeEnd;
+                const todayStr = new Date().toISOString().split('T')[0];
+                const insightDate = new Date(insight.date_start).toISOString().split('T')[0];
+                const passesSpendingToday = spendingToday
+                  ? insightDate === todayStr && parseFloat(insight.spend || '0') > 0
+                  : true;
+
+                return afterStart && beforeEnd && passesSpendingToday;
               })
               .sort(
                 (a, b) =>
@@ -178,8 +231,10 @@ export const Home = () => {
       selectedStartDate,
       selectedEndDate,
       searchName,
+      selectedVertical,
+      spendingToday
     );
-  }, [currentData, selectedStartDate, selectedEndDate, searchName]);
+  }, [currentData, selectedStartDate, selectedEndDate, searchName, selectedVertical, spendingToday]);
 
   const comparisonFiltered = useMemo(() => {
     return filterDataByDate(
@@ -187,8 +242,10 @@ export const Home = () => {
       selectedStartDate,
       selectedEndDate,
       searchName,
+      selectedVertical,
+      spendingToday
     );
-  }, [currentData, selectedStartDate, selectedEndDate, searchName]);
+  }, [currentData, selectedStartDate, selectedEndDate, searchName, selectedVertical, spendingToday]);
 
   const calculateKPIs = (data: Campaign[]) => {
     let totalSpend = 0;
@@ -246,7 +303,25 @@ export const Home = () => {
       title="Performance Campagne"
       subtitle="Analisi dettagliata di traffico, costi e conversioni."
       lastUpdate={new Date().toLocaleDateString()}
-      rightActions={FilterControls}
+      rightActions={
+        <div className="flex items-center gap-4">
+          {FilterControls}
+          <button
+            onClick={() => exportTableToCSV(
+              mapCampaignsToAdsetRows(currentFiltered),
+              `campagne_${new Date().toISOString().split('T')[0]}.csv`
+            )}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Esporta CSV
+          </button>
+        </div>
+      }
     >
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
         <KPICard

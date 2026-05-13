@@ -80,7 +80,7 @@ const SortIcon = ({ column }: { column: any }) => {
   return <ArrowUpDown className="ml-1 h-3 w-3 opacity-20" />;
 };
 
-function mapCampaignsToAdsetRows(campaigns: any[]) {
+export function mapCampaignsToAdsetRows(campaigns: any[]) {
   const rows: any[] = [];
 
   for (const campaign of campaigns) {
@@ -89,7 +89,7 @@ function mapCampaignsToAdsetRows(campaigns: any[]) {
       const { start_date } = getDateRangeFormatted(insights);
 
       const totals = sumInsights(insights);
-      const { ctr, cpc, cpm, conversion_rate } = calculateMetrics(totals);
+      const { ctr, cpc, cpm, conversion_rate, cpl } = calculateMetrics(totals);
       rows.push({
         campaign_name: campaign.name,
         ad_account_name: campaign.account_name,
@@ -104,6 +104,7 @@ function mapCampaignsToAdsetRows(campaigns: any[]) {
         clicks: totals.clicks,
         impressions: totals.impressions,
         spend: totals.spend,
+        cpl,
         ctr,
         cpc,
         cpm,
@@ -163,18 +164,13 @@ const columns: ColumnDef<CampaignRow>[] = [
     cell: ({ getValue }) => formatInt(Number(getValue() || 0)),
   },
   {
-    accessorKey: 'cpc',
-    header: 'CPC (€)',
+    accessorKey: 'spend',
+    header: 'Spend (€)',
     cell: ({ getValue }) => formatCur(Number(getValue() || 0)),
   },
   {
-    accessorKey: 'clicks',
-    header: 'Clicks',
-    cell: ({ getValue }) => formatInt(Number(getValue() || 0)),
-  },
-  {
-    accessorKey: 'ctr',
-    header: 'CTR (%)',
+    accessorKey: 'cpl',
+    header: 'CPL (€)',
     cell: ({ getValue }) => formatCur(Number(getValue() || 0)),
   },
   {
@@ -183,9 +179,19 @@ const columns: ColumnDef<CampaignRow>[] = [
     cell: ({ getValue }) => formatCur(Number(getValue() || 0)),
   },
   {
-    accessorKey: 'spend',
-    header: 'Spend (€)',
+    accessorKey: 'ctr',
+    header: 'CTR (%)',
     cell: ({ getValue }) => formatCur(Number(getValue() || 0)),
+  },
+  {
+    accessorKey: 'cpc',
+    header: 'CPC (€)',
+    cell: ({ getValue }) => formatCur(Number(getValue() || 0)),
+  },
+  {
+    accessorKey: 'clicks',
+    header: 'Clicks',
+    cell: ({ getValue }) => formatInt(Number(getValue() || 0)),
   },
   {
     accessorKey: 'conversion_rate',
@@ -285,15 +291,54 @@ export function TableHome({ data, sorting, setSorting }: TableHomeProps) {
             <TableCell>-</TableCell>
             <TableCell>-</TableCell>
             <TableCell>{formatInt(totals.totalLeads)}</TableCell>
-            <TableCell>-</TableCell>
-            <TableCell>-</TableCell>
-            <TableCell>-</TableCell>
-            <TableCell>-</TableCell>
             <TableCell>€ {formatInt(totals.totalSpend)}</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
             <TableCell>-</TableCell>
           </TableRow>
         </TableFooter>
       </Table>
     </div>
   );
+}
+
+export function exportTableToCSV(rows: CampaignRow[], filename = 'campagne.csv') {
+  const headers = [
+    'Frontend', 'Cliente', 'User ID', 'Tipologia', 'Manager',
+    'Start Date', 'End Date', 'Leads', 'Spend (€)', 'CPL (€)',
+    'CPM (€)', 'CTR (%)', 'CPC (€)', 'Clicks', 'Conv. (%)'
+  ];
+
+  const csvRows = rows.map(row => [
+    row.campaign_name,
+    row.ad_account_name,
+    row.user_id || '',
+    row.tipologia || '',
+    row.manager || '',
+    row.start_date ? new Date(row.start_date).toLocaleDateString('it-IT') : '',
+    row.end_date ? new Date(row.end_date).toLocaleDateString('it-IT') : '',
+    row.leads_generated,
+    row.spend,
+    row.cpl,
+    row.cpm,
+    row.ctr,
+    row.cpc,
+    row.clicks,
+    row.conversion_rate,
+  ]);
+
+  const csvContent = [headers, ...csvRows]
+    .map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+
+  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
