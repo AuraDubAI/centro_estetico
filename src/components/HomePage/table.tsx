@@ -151,21 +151,6 @@ const columns: ColumnDef<CampaignRow>[] = [
     header: 'Frontend',
   },
   {
-    accessorKey: 'user_id',
-    header: 'User ID',
-    cell: ({ getValue }) => getValue<string | null>() || '-',
-  },
-  {
-    accessorKey: 'tipologia',
-    header: 'Tipologia',
-    cell: ({ getValue }) => getValue<string | null>() || '-',
-  },
-  {
-    accessorKey: 'manager',
-    header: 'Manager',
-    cell: ({ getValue }) => getValue<string | null>() || '-',
-  },
-  {
     accessorKey: 'start_date',
     header: 'Start Date',
     cell: ({ getValue }) => {
@@ -182,6 +167,21 @@ const columns: ColumnDef<CampaignRow>[] = [
 
       return value ? formatDate(value) : '--';
     },
+  },
+  {
+    accessorKey: 'manager',
+    header: 'Manager',
+    cell: ({ getValue }) => getValue<string | null>() || '-',
+  },
+  {
+    accessorKey: 'user_id',
+    header: 'User ID',
+    cell: ({ getValue }) => getValue<string | null>() || '-',
+  },
+  {
+    accessorKey: 'tipologia',
+    header: 'Tipologia',
+    cell: ({ getValue }) => getValue<string | null>() || '-',
   },
   {
     accessorKey: 'cpc',
