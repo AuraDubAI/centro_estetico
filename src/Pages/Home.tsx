@@ -23,6 +23,7 @@ export const Home = () => {
   const [selectedEndDate, setSelectedEndDate] = useState('');
   const [selectedVertical, setSelectedVertical] = useState<'ALL' | 'CEA' | 'MEDTECH'>('ALL');
   const [spendingYesterday, setSpendingYesterday] = useState(false);
+  const [excludedIds, setExcludedIds] = useState<string[]>([]);
 
   const handleCampaignClick = (name: string) => {
     setSearchName(name);
@@ -203,11 +204,13 @@ export const Home = () => {
     endDate: string,
     searchName: string,
     selectedVertical: 'ALL' | 'CEA' | 'MEDTECH',
-    spendingYesterday: boolean
+    spendingYesterday: boolean,
+    excludedIds: string[] = []
   ) => {
     const search = searchName.toLowerCase();
 
     return data
+      .filter((campaign) => !excludedIds.includes(campaign.campain_id))
       .map((campaign) => {
         const verticalMatch =
           selectedVertical === 'ALL' ||
@@ -276,9 +279,10 @@ export const Home = () => {
       selectedEndDate,
       searchName,
       selectedVertical,
-      spendingYesterday
+      spendingYesterday,
+      excludedIds
     );
-  }, [currentData, selectedStartDate, selectedEndDate, searchName, selectedVertical, spendingYesterday]);
+  }, [currentData, selectedStartDate, selectedEndDate, searchName, selectedVertical, spendingYesterday, excludedIds]);
 
   const comparisonFiltered = useMemo(() => {
     return filterDataByDate(
@@ -287,9 +291,10 @@ export const Home = () => {
       selectedEndDate,
       searchName,
       selectedVertical,
-      spendingYesterday
+      spendingYesterday,
+      excludedIds
     );
-  }, [currentData, selectedStartDate, selectedEndDate, searchName, selectedVertical, spendingYesterday]);
+  }, [currentData, selectedStartDate, selectedEndDate, searchName, selectedVertical, spendingYesterday, excludedIds]);
 
   const calculateKPIs = (data: Campaign[]) => {
     let totalSpend = 0;
@@ -392,6 +397,18 @@ export const Home = () => {
         />
       </div>
 
+      {excludedIds.length > 0 && (
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => setExcludedIds([])}
+            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-full text-sm font-bold shadow-sm border border-red-200 hover:bg-red-100 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            Campagne Nascoste ({excludedIds.length}) - Mostra Tutte
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-4 mb-6 p-4 border border-slate-100 rounded-3xl bg-white shadow-sm items-end transition-all hover:shadow-md">
         <div className="flex flex-col gap-2 w-full">
           <Label className="pl-2 font-bold text-slate-500 uppercase tracking-wider text-[10px]">Cerca nella tabella</Label>
@@ -427,6 +444,7 @@ export const Home = () => {
             data={currentFiltered}
             sorting={sorting}
             setSorting={setSorting}
+            onExclude={(id) => setExcludedIds(prev => [...prev, id])}
           />
         )}
       </div>
