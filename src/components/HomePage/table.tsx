@@ -221,7 +221,7 @@ export function TableHome({ data, sorting, setSorting }: TableHomeProps) {
   });
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto bg-white rounded-3xl shadow-sm border border-slate-100">
       <Table className="table-auto">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
