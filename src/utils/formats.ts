@@ -56,5 +56,6 @@ export function calculateMetrics(totals: {
     cpc: clicks ? spend / clicks : 0,
     cpm: impressions ? (spend / impressions) * 1000 : 0,
     conversion_rate: clicks ? (leads / clicks) * 100 : 0,
+    cpl: leads ? spend / leads : 0,
   };
 }

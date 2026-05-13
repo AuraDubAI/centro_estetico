@@ -78,6 +78,8 @@ export interface CampaignRow {
   impressions: number;
   spend: number;
 
+  cpl: number;
+
   ctr: number;
   cpc: number;
   cpm: number;
