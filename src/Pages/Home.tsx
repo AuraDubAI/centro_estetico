@@ -8,6 +8,7 @@ import { Campaign } from '@/types/api';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { X } from 'lucide-react';
+import dayjs from 'dayjs';
 
 export const Home = () => {
   const [currentData, setCurrentData] = useState<Campaign[]>([]);
@@ -195,19 +196,14 @@ export const Home = () => {
           .map((adset) => {
             const filteredInsights = (adset.insights || [])
               .filter((insight) => {
-                const date = new Date(insight.date_start)
-                  .toISOString()
-                  .split('T')[0];
+                const date = dayjs(insight.date_start).format('YYYY-MM-DD');
 
                 const afterStart = startDate ? date >= startDate : true;
                 const beforeEnd = endDate ? date <= endDate : true;
 
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayStr = yesterday.toISOString().split('T')[0];
-                const insightDate = new Date(insight.date_start).toISOString().split('T')[0];
+                const yesterdayStr = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
                 const passesSpendingYesterday = spendingYesterday
-                  ? insightDate === yesterdayStr && parseFloat(insight.spend || '0') > 0
+                  ? date === yesterdayStr && parseFloat(insight.spend || '0') > 0
                   : true;
 
                 return afterStart && beforeEnd && passesSpendingYesterday;
