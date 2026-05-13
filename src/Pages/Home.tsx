@@ -17,7 +17,7 @@ export const Home = () => {
   const [selectedStartDate, setSelectedStartDate] = useState('');
   const [selectedEndDate, setSelectedEndDate] = useState('');
   const [selectedVertical, setSelectedVertical] = useState<'ALL' | 'CEA' | 'MEDTECH'>('ALL');
-  const [spendingToday, setSpendingToday] = useState(false);
+  const [spendingYesterday, setSpendingYesterday] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -146,17 +146,17 @@ export const Home = () => {
       <div className="flex flex-col gap-1">
         <label className="text-[10px] font-bold text-gray-400 uppercase mb-1">Spending</label>
         <button
-          onClick={() => setSpendingToday(!spendingToday)}
+          onClick={() => setSpendingYesterday(!spendingYesterday)}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-xs font-semibold transition-all duration-200 ${
-            spendingToday
+            spendingYesterday
               ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-100'
               : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
           }`}
         >
           <span className={`w-2 h-2 rounded-full transition-all ${
-            spendingToday ? 'bg-white animate-pulse' : 'bg-slate-300'
+            spendingYesterday ? 'bg-white animate-pulse' : 'bg-slate-300'
           }`} />
-          Spending Today
+          Spending Yesterday
         </button>
       </div>
     </div>
@@ -168,7 +168,7 @@ export const Home = () => {
     endDate: string,
     searchName: string,
     selectedVertical: 'ALL' | 'CEA' | 'MEDTECH',
-    spendingToday: boolean
+    spendingYesterday: boolean
   ) => {
     const search = searchName.toLowerCase();
 
@@ -202,13 +202,15 @@ export const Home = () => {
                 const afterStart = startDate ? date >= startDate : true;
                 const beforeEnd = endDate ? date <= endDate : true;
 
-                const todayStr = new Date().toISOString().split('T')[0];
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split('T')[0];
                 const insightDate = new Date(insight.date_start).toISOString().split('T')[0];
-                const passesSpendingToday = spendingToday
-                  ? insightDate === todayStr && parseFloat(insight.spend || '0') > 0
+                const passesSpendingYesterday = spendingYesterday
+                  ? insightDate === yesterdayStr && parseFloat(insight.spend || '0') > 0
                   : true;
 
-                return afterStart && beforeEnd && passesSpendingToday;
+                return afterStart && beforeEnd && passesSpendingYesterday;
               })
               .sort(
                 (a, b) =>
@@ -232,9 +234,9 @@ export const Home = () => {
       selectedEndDate,
       searchName,
       selectedVertical,
-      spendingToday
+      spendingYesterday
     );
-  }, [currentData, selectedStartDate, selectedEndDate, searchName, selectedVertical, spendingToday]);
+  }, [currentData, selectedStartDate, selectedEndDate, searchName, selectedVertical, spendingYesterday]);
 
   const comparisonFiltered = useMemo(() => {
     return filterDataByDate(
@@ -243,9 +245,9 @@ export const Home = () => {
       selectedEndDate,
       searchName,
       selectedVertical,
-      spendingToday
+      spendingYesterday
     );
-  }, [currentData, selectedStartDate, selectedEndDate, searchName, selectedVertical, spendingToday]);
+  }, [currentData, selectedStartDate, selectedEndDate, searchName, selectedVertical, spendingYesterday]);
 
   const calculateKPIs = (data: Campaign[]) => {
     let totalSpend = 0;
