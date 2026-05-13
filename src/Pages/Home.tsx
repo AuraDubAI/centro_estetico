@@ -11,6 +11,8 @@ import { X } from 'lucide-react';
 import dayjs from 'dayjs';
 import { BIInsights } from '@/components/HomePage/BIInsights';
 import { PerformanceChart } from '@/components/HomePage/PerformanceChart';
+import { FunnelChartComponent } from '@/components/HomePage/FunnelChartComponent';
+import { RadialTopCampaigns } from '@/components/HomePage/RadialTopCampaigns';
 
 export const Home = () => {
   const [currentData, setCurrentData] = useState<Campaign[]>([]);
@@ -353,6 +355,12 @@ export const Home = () => {
 
       {/* BI Insights Banner (Cliccabili) */}
       <BIInsights data={currentFiltered} onCampaignClick={handleCampaignClick} />
+
+      {/* Advanced BI Charts */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8 mt-4">
+        <FunnelChartComponent data={currentFiltered} />
+        <RadialTopCampaigns data={currentFiltered} />
+      </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 mb-8 mt-8">
         <KPICard
