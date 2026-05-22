@@ -21,6 +21,7 @@ import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import {
   formatCur,
   formatInt,
+  formatNum2,
   sumInsights,
   calculateMetrics,
   formatDate,
@@ -90,6 +91,26 @@ export function mapCampaignsToAdsetRows(campaigns: any[]) {
 
       const totals = sumInsights(insights);
       const { ctr, cpc, cpm, conversion_rate, cpl } = calculateMetrics(totals);
+
+      // Calculate reach sum and weighted average frequency
+      let reach = 0;
+      let weightedFreqSum = 0;
+      let totalImpressions = 0;
+
+      for (const insight of insights) {
+        const imps = Number(insight.impressions || 0);
+        const rch = Number(insight.reach || 0);
+        const freq = parseFloat(String(insight.frequency || '0'));
+
+        reach += rch;
+        weightedFreqSum += imps * freq;
+        totalImpressions += imps;
+      }
+
+      const frequency = totalImpressions > 0
+        ? parseFloat((weightedFreqSum / totalImpressions).toFixed(2))
+        : 0;
+
       rows.push({
         campaign_id: campaign.campain_id,
         campaign_name: campaign.name,
@@ -110,6 +131,11 @@ export function mapCampaignsToAdsetRows(campaigns: any[]) {
         cpc,
         cpm,
         conversion_rate,
+        account_id: campaign.account_id || null,
+        target_geo: adset.target_geo || null,
+        audience_size: adset.audience_size || null,
+        reach,
+        frequency,
       });
     }
   }
@@ -198,6 +224,31 @@ const columns: ColumnDef<CampaignRow>[] = [
     accessorKey: 'conversion_rate',
     header: 'Conv. (%)',
     cell: ({ getValue }) => formatCur(Number(getValue() || 0)),
+  },
+  {
+    accessorKey: 'account_id',
+    header: 'Account ID',
+    cell: ({ getValue }) => getValue<string | null>() || '-',
+  },
+  {
+    accessorKey: 'target_geo',
+    header: 'Target Geo',
+    cell: ({ getValue }) => getValue<string | null>() || '-',
+  },
+  {
+    accessorKey: 'audience_size',
+    header: 'Audience Size',
+    cell: ({ getValue }) => getValue<string | null>() || '-',
+  },
+  {
+    accessorKey: 'reach',
+    header: 'Reach',
+    cell: ({ getValue }) => formatInt(Number(getValue() || 0)),
+  },
+  {
+    accessorKey: 'frequency',
+    header: 'Frequency',
+    cell: ({ getValue }) => formatNum2(Number(getValue() || 0)),
   },
 ];
 
@@ -317,6 +368,11 @@ export function TableHome({ data, sorting, setSorting, onExclude }: TableHomePro
             <TableCell>-</TableCell>
             <TableCell>-</TableCell>
             <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
+            <TableCell>-</TableCell>
           </TableRow>
         </TableFooter>
       </Table>
@@ -328,7 +384,8 @@ export function exportTableToCSV(rows: CampaignRow[], filename = 'campagne.csv')
   const headers = [
     'Frontend', 'Cliente', 'User ID', 'Tipologia', 'Manager',
     'Start Date', 'End Date', 'Leads', 'Spend (€)', 'CPL (€)',
-    'CPM (€)', 'CTR (%)', 'CPC (€)', 'Clicks', 'Conv. (%)'
+    'CPM (€)', 'CTR (%)', 'CPC (€)', 'Clicks', 'Conv. (%)',
+    'Account ID', 'Target Geo', 'Audience Size', 'Reach', 'Frequency'
   ];
 
   const csvRows = rows.map(row => [
@@ -347,6 +404,11 @@ export function exportTableToCSV(rows: CampaignRow[], filename = 'campagne.csv')
     row.cpc,
     row.clicks,
     row.conversion_rate,
+    row.account_id || '',
+    row.target_geo || '',
+    row.audience_size || '',
+    row.reach || 0,
+    row.frequency || 0,
   ]);
 
   const csvContent = [headers, ...csvRows]

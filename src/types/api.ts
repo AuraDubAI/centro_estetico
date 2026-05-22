@@ -29,6 +29,9 @@ export interface Adset {
   effective_status: string;
   updated_time_adset: string;
   end_time: string | null;
+  
+  target_geo?: string | null;
+  audience_size?: string | null;
 
   id: number;
   createdAt: string;
@@ -53,6 +56,8 @@ export interface Insight {
   date_end: string;
 
   leads: number | null;
+  reach?: string | number | null;
+  frequency?: string | number | null;
 
   id: number;
   createdAt: string;
@@ -84,4 +89,11 @@ export interface CampaignRow {
   cpc: number;
   cpm: number;
   conversion_rate: number;
+
+  account_id?: string | null;
+  target_geo?: string | null;
+  audience_size?: string | null;
+  reach?: number;
+  frequency?: number;
 }
+
