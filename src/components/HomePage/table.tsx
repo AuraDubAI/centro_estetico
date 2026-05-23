@@ -382,28 +382,28 @@ export function TableHome({ data, sorting, setSorting, onExclude }: TableHomePro
 
 export function exportTableToCSV(rows: CampaignRow[], filename = 'campagne.csv') {
   const headers = [
-    'Frontend', 'Cliente', 'User ID', 'Tipologia', 'Manager',
-    'Start Date', 'End Date', 'Leads', 'Spend (€)', 'CPL (€)',
-    'CPM (€)', 'CTR (%)', 'CPC (€)', 'Clicks', 'Conv. (%)',
+    'Cliente', 'Spesa', 'Lead', 'CPL', 'CPM', 'CTR',
+    'Istituto Zoho', 'Manager', 'Tipologia', 'Nome Campagna',
+    'Nome Adset', 'Data', 'CPC', 'Impressioni', 'Click',
     'Account ID', 'Target Geo', 'Audience Size', 'Reach', 'Frequency'
   ];
 
   const csvRows = rows.map(row => [
-    row.campaign_name,
     row.ad_account_name,
-    row.user_id || '',
-    row.tipologia || '',
-    row.manager || '',
-    row.start_date ? dayjs(row.start_date).format('DD/MM/YYYY') : '',
-    row.end_date ? (formatDate(row.end_date) === '--' ? '' : formatDate(row.end_date)) : '',
-    row.leads_generated,
     row.spend,
+    row.leads_generated,
     row.cpl,
     row.cpm,
     row.ctr,
+    row.user_id || '',
+    row.manager || '',
+    row.tipologia || '',
+    row.campaign_name,
+    row.adset_name || '',
+    row.start_date ? dayjs(row.start_date).format('YYYY-MM-DD') : '',
     row.cpc,
+    row.impressions,
     row.clicks,
-    row.conversion_rate,
     row.account_id || '',
     row.target_geo || '',
     row.audience_size || '',
@@ -412,7 +412,7 @@ export function exportTableToCSV(rows: CampaignRow[], filename = 'campagne.csv')
   ]);
 
   const csvContent = [headers, ...csvRows]
-    .map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    .map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';'))
     .join('\n');
 
   const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
